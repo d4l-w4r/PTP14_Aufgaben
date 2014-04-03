@@ -1,5 +1,9 @@
 /bin
+/.metadata
+/.settings
 *.class
 *.jar
 *~
 *.backup
+.classpath
+.project
