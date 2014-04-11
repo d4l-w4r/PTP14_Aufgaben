@@ -6,7 +6,7 @@ package mydraw;
 //You may study, use, modify, and distribute it for non-commercial purposes.
 //For any commercial use, see http://www.davidflanagan.com/javaexamples
 
-//import java.awt.*;
+
 import javax.swing.*;
 
 import java.awt.Dimension;
@@ -14,7 +14,6 @@ import java.awt.Graphics;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.event.*;
 
 import java.lang.System;
@@ -60,6 +59,7 @@ public class Draw
 /** This class implements the GUI for our application */
 class DrawGUI extends JFrame
 {
+	private static final long serialVersionUID = 1L; 
 	Draw app; // A reference to the application, to send commands to.
 	Color color;
 	private JPanel drawPane;
@@ -93,11 +93,13 @@ class DrawGUI extends JFrame
 		JButton clear = new JButton("Clear");
 		JButton quit = new JButton("Quit");
 		
+		//Create a panel to draw on
 		drawPane = new JPanel();
-		drawPane.setPreferredSize(new Dimension(500, 400));
+		drawPane.setPreferredSize(new Dimension(500, 400)); //important to auto-calculate the window size with pack()
+		
+		// Create a Panel for the Menu, set a LayoutManager and add the choosers and buttons to the panel.
 		JPanel menuPane = new JPanel();
 		menuPane.setBackground(Color.LIGHT_GRAY);
-		// Set a LayoutManager, and add the choosers and buttons to the window.
 		menuPane.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 		menuPane.add(new JLabel("Shape:"));
 		menuPane.add(shape_chooser);
@@ -105,13 +107,12 @@ class DrawGUI extends JFrame
 		menuPane.add(color_chooser);
 		menuPane.add(clear);
 		menuPane.add(quit);
-				
+		
+		//Set BorderLayout on the top level Container and add the menu and draw panel
 		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(menuPane, BorderLayout.NORTH);
 		this.getContentPane().add(drawPane, BorderLayout.CENTER);
-		System.out.println(this.getContentPane().getComponentCount());
-		System.out.println(this.getContentPane().getComponents()[0]);
-		System.out.println(this.getContentPane().getComponents()[1]);
+		
 		// Here's a local class used for action listeners for the buttons
 		class DrawActionListener implements ActionListener
 		{
@@ -137,6 +138,7 @@ class DrawGUI extends JFrame
 		class ShapeManager implements ItemListener
 		{
 			DrawGUI gui;
+			//our panel to draw on
 			JPanel drawPane; 
 
 			abstract class ShapeDrawer extends MouseAdapter implements
@@ -155,14 +157,16 @@ class DrawGUI extends JFrame
 				public void mousePressed(MouseEvent e)
 				{
 					lastx = e.getX();
-					lasty = e.getY();//-65;
+					lasty = e.getY();
 				}
 
 				public void mouseDragged(MouseEvent e)
 				{
 					//Graphics g = gui.getGraphics();
+					//instead of pulling in the Graphics element of the toplevel container,
+					//get it from our draw Panel
 					Graphics g = drawPane.getGraphics();
-					int x = e.getX(), y = e.getY();//-65;
+					int x = e.getX(), y = e.getY();
 					g.setColor(gui.color);
 					g.setPaintMode();
 					g.drawLine(lastx, lasty, x, y);
@@ -265,6 +269,9 @@ class DrawGUI extends JFrame
 				// default: scribble mode
 				currentDrawer = scribbleDrawer;
 				// activate scribble drawer
+				//gui.addMouseListener(currentDrawer);
+				//instead of registering the listener to the toplevel container,
+				//register to drawPane.. otherwise there is a ~65 pixel offset
 				drawPane.addMouseListener(currentDrawer);
 				drawPane.addMouseMotionListener(currentDrawer);
 			}
@@ -340,12 +347,14 @@ class DrawGUI extends JFrame
 		});
 
 		// Finally, set the size of the window, and pop it up
-		//this.setSize(500, 400);
 		this.setBackground(Color.white);
-		this.pack(); //calculated by the preferred size of the drawPane
-		this.setVisible(true);
+		//this.setSize(500, 400);
+		this.pack(); //calculated by the preferred size of the drawPane instead of explicitly setting the size
+		//this.show();
+		this.setVisible(true); //use setVisible(true) instead of deprecated show()
 	}
 	
+	//getter for the private drawPane field
 	public JPanel getDrawPane() {
 		return drawPane;
 	}
