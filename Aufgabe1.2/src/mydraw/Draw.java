@@ -14,6 +14,7 @@ import java.awt.Graphics;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.*;
 
 import java.lang.System;
@@ -42,10 +43,11 @@ public class Draw
 		{// clear the GUI window
 			// It would be more modular to include this functionality in the GUI
 			// class itself. But for demonstration purposes, we do it here.
-			Graphics g = window.getDrawPane().getGraphics();
-			g.setColor(window.getBackground());
-			g.fillRect(0, 0, window.getSize().width, window.getSize().height);
-			window.getDrawPane().paintComponents(g);
+			JPanel drawPane = window.getDrawPane();
+			Graphics g = drawPane.getGraphics();
+			g.setColor(drawPane.getBackground());
+			g.fillRect(0, 0, drawPane.getSize().width, drawPane.getSize().height);
+			drawPane.paintComponents(g);
 		}
 		else if (command.equals("quit"))
 		{ // quit the application
@@ -92,11 +94,11 @@ class DrawGUI extends JFrame
 		JButton quit = new JButton("Quit");
 		
 		drawPane = new JPanel();
-		drawPane.setMinimumSize(new Dimension(1024, 768));
+		drawPane.setPreferredSize(new Dimension(500, 400));
 		JPanel menuPane = new JPanel();
-		
+		menuPane.setBackground(Color.LIGHT_GRAY);
 		// Set a LayoutManager, and add the choosers and buttons to the window.
-		menuPane.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+		menuPane.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
 		menuPane.add(new JLabel("Shape:"));
 		menuPane.add(shape_chooser);
 		menuPane.add(new JLabel("Color:"));
@@ -135,6 +137,7 @@ class DrawGUI extends JFrame
 		class ShapeManager implements ItemListener
 		{
 			DrawGUI gui;
+			JPanel drawPane; 
 
 			abstract class ShapeDrawer extends MouseAdapter implements
 					MouseMotionListener
@@ -152,15 +155,14 @@ class DrawGUI extends JFrame
 				public void mousePressed(MouseEvent e)
 				{
 					lastx = e.getX();
-					lasty = e.getY();
+					lasty = e.getY();//-65;
 				}
 
 				public void mouseDragged(MouseEvent e)
 				{
 					//Graphics g = gui.getGraphics();
-					Graphics g = gui.getDrawPane().getGraphics();
-					Graphics gMenu = gui.getGraphics();
-					int x = e.getX(), y = e.getY();
+					Graphics g = drawPane.getGraphics();
+					int x = e.getX(), y = e.getY();//-65;
 					g.setColor(gui.color);
 					g.setPaintMode();
 					g.drawLine(lastx, lasty, x, y);
@@ -186,7 +188,8 @@ class DrawGUI extends JFrame
 				// and draw the resulting shape
 				public void mouseReleased(MouseEvent e)
 				{
-					Graphics g = gui.getGraphics();
+					//Graphics g = gui.getGraphics();
+					Graphics g = drawPane.getGraphics();
 					if (lastx != -1)
 					{
 						// first undraw a rubber rect
@@ -207,7 +210,8 @@ class DrawGUI extends JFrame
 				// draw the resulting shape in "rubber-band mode"
 				public void mouseDragged(MouseEvent e)
 				{
-					Graphics g = gui.getGraphics();
+					//Graphics g = gui.getGraphics();
+					Graphics g = drawPane.getGraphics();
 					// these commands set the rubberband mode
 					g.setXORMode(gui.color);
 					g.setColor(gui.getBackground());
@@ -257,11 +261,12 @@ class DrawGUI extends JFrame
 			public ShapeManager(DrawGUI itsGui)
 			{
 				gui = itsGui;
+				drawPane = gui.getDrawPane();
 				// default: scribble mode
 				currentDrawer = scribbleDrawer;
 				// activate scribble drawer
-				gui.addMouseListener(currentDrawer);
-				gui.addMouseMotionListener(currentDrawer);
+				drawPane.addMouseListener(currentDrawer);
+				drawPane.addMouseMotionListener(currentDrawer);
 			}
 
 			// reset the shape drawer
@@ -270,12 +275,12 @@ class DrawGUI extends JFrame
 				if (currentDrawer == l) return;
 
 				// deactivate previous drawer
-				gui.removeMouseListener(currentDrawer);
-				gui.removeMouseMotionListener(currentDrawer);
+				drawPane.removeMouseListener(currentDrawer);
+				drawPane.removeMouseMotionListener(currentDrawer);
 				// activate new drawer
 				currentDrawer = l;
-				gui.addMouseListener(currentDrawer);
-				gui.addMouseMotionListener(currentDrawer);
+				drawPane.addMouseListener(currentDrawer);
+				drawPane.addMouseMotionListener(currentDrawer);
 			}
 
 			// user selected new shape => reset the shape mode
@@ -335,8 +340,9 @@ class DrawGUI extends JFrame
 		});
 
 		// Finally, set the size of the window, and pop it up
-		this.setSize(500, 400);
+		//this.setSize(500, 400);
 		this.setBackground(Color.white);
+		this.pack(); //calculated by the preferred size of the drawPane
 		this.setVisible(true);
 	}
 	
