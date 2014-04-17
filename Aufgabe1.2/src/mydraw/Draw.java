@@ -16,6 +16,8 @@ import java.awt.FlowLayout;
 import java.awt.Color;
 import java.awt.event.*;
 
+import mydraw.DrawPanel;
+
 import java.lang.System;
 
 /** The application class. Processes high-level commands sent by GUI */
@@ -42,11 +44,11 @@ public class Draw
 		{// clear the GUI window
 			// It would be more modular to include this functionality in the GUI
 			// class itself. But for demonstration purposes, we do it here.
-			JPanel drawPane = window.getDrawPane();
-			Graphics g = drawPane.getGraphics();
+			DrawPanel drawPane = window.getDrawPane();
+			Graphics g = drawPane.getBufferedGraphics();
 			g.setColor(drawPane.getBackground());
 			g.fillRect(0, 0, drawPane.getSize().width, drawPane.getSize().height);
-			drawPane.paintComponents(g);
+			drawPane.repaint();
 		}
 		else if (command.equals("quit"))
 		{ // quit the application
@@ -62,7 +64,8 @@ class DrawGUI extends JFrame
 	private static final long serialVersionUID = 1L; 
 	Draw app; // A reference to the application, to send commands to.
 	Color color;
-	private JPanel drawPane;
+	private DrawPanel drawPane;
+	
 	/**
 	 * The GUI constructor does all the work of creating the GUI and setting up
 	 * event listeners. Note the use of local and anonymous classes.
@@ -94,7 +97,7 @@ class DrawGUI extends JFrame
 		JButton quit = new JButton("Quit");
 		
 		//Create a panel to draw on
-		drawPane = new JPanel();
+		drawPane = new DrawPanel(500, 400);
 		drawPane.setPreferredSize(new Dimension(500, 400)); //important to auto-calculate the window size with pack()
 		
 		// Create a Panel for the Menu, set a LayoutManager and add the choosers and buttons to the panel.
@@ -132,14 +135,19 @@ class DrawGUI extends JFrame
 		// Define action listener adapters that connect the buttons to the app
 		clear.addActionListener(new DrawActionListener("clear"));
 		quit.addActionListener(new DrawActionListener("quit"));
-
+		this.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e){
+				drawPane.onResize();
+			}
+		});
 		// this class determines how mouse events are to be interpreted,
 		// depending on the shape mode currently set
 		class ShapeManager implements ItemListener
 		{
 			DrawGUI gui;
 			//our panel to draw on
-			JPanel drawPane; 
+			DrawPanel drawPane; 
 
 			abstract class ShapeDrawer extends MouseAdapter implements
 					MouseMotionListener
@@ -165,13 +173,14 @@ class DrawGUI extends JFrame
 					//Graphics g = gui.getGraphics();
 					//instead of pulling in the Graphics element of the toplevel container,
 					//get it from our draw Panel
-					Graphics g = drawPane.getGraphics();
+					Graphics g = drawPane.getBufferedGraphics();
 					int x = e.getX(), y = e.getY();
 					g.setColor(gui.color);
 					g.setPaintMode();
 					g.drawLine(lastx, lasty, x, y);
 					lastx = x;
 					lasty = y;
+					drawPane.repaint();
 				}
 			}
 
@@ -206,12 +215,15 @@ class DrawGUI extends JFrame
 					// these commands finish the rubberband mode
 					g.setPaintMode();
 					g.setColor(gui.color);
+					Graphics buffer = drawPane.getBufferedGraphics();
+					buffer.setColor(gui.color);
 					// draw the finel rectangle
-					doDraw(pressx, pressy, e.getX(), e.getY(), g);
+					doDraw(pressx, pressy, e.getX(), e.getY(), buffer);
+					drawPane.repaint();
 				}
 
 				// mouse released => temporarily set second corner of rectangle
-				// draw the resulting shape in "rubber-band mode"
+				// draw the resulting shape in "rubber-band mode" 	
 				public void mouseDragged(MouseEvent e)
 				{
 					//Graphics g = gui.getGraphics();
@@ -355,7 +367,7 @@ class DrawGUI extends JFrame
 	}
 	
 	//getter for the private drawPane field
-	public JPanel getDrawPane() {
+	public DrawPanel getDrawPane() {
 		return drawPane;
 	}
 }
