@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Dimension;
+
 
 public class DrawPanel extends JPanel {
 	
@@ -12,7 +12,14 @@ public class DrawPanel extends JPanel {
 	
 	public DrawPanel(int w, int h) {
 		_buffer = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+//		this.setSize(w, h);
+//		this.setVisible(true);
+//		this.setBackground(Color.WHITE);
+//		Graphics g = this.getGraphics();
+//		this.paintComponents(g);
+//		g.drawImage(_buffer, 0, 0, null);
 	}
+	
 	
 	@Override
 	public void paintComponent(Graphics g) {
@@ -50,4 +57,7 @@ public class DrawPanel extends JPanel {
 		_buffer = newBuff;		
 	}
 	
+	public void setDrawBg(Color c) {
+		
+	}
 }
